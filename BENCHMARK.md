@@ -34,6 +34,17 @@ Six clean strata per county (4 neighborhoods, commercial, vacant land), 180 stra
 | Unflagged non-arm's-length at about half of market | 297/300 | 99.0% |
 | Legitimate sales trimmed as outliers | 864/24339 | 3.5% |
 
+## Rising market (12% a year, static roll)
+
+Same 30 seeds, but sale prices drift up 12% over the year while assessments stay at their January values. Time adjustment (`--time-adjust auto`) estimates the trend and restates prices at the earliest sale date.
+
+| | Regressivity caught | Under-assessment caught | Sales chasing caught | FAIL or REVIEW on clean strata | Mean COD, clean neighborhoods |
+|---|---:|---:|---:|---:|---:|
+| No adjustment | 30/30 | 30/30 | 30/30 | 22.2% | 6.52 |
+| Auto time adjustment | 30/30 | 30/30 | 30/30 | 2.8% | 5.92 |
+
+Estimated trend across seeds: mean 12.3% a year (range 9.9% to 14.3%) against 12.0% planted.
+
 ## What this does not show
 
 - The data is synthetic and the planted effects are large on purpose. Smaller effects will be missed more often; a real roll has problems that are not planted here.

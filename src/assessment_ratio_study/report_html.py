@@ -135,6 +135,17 @@ def _excluded_html(res: Result, limit: int = 60) -> str:
     )
 
 
+def _ta_note(res: Result) -> str:
+    ta = res.time_adjustment
+    if ta is None:
+        return ""
+    how = f"estimated from {ta.n_used} sales" if ta.method == "estimated" else "as given"
+    return (
+        f'<p class="note">Sale prices were time-adjusted: {ta.annual_pct:.2f}% per year ({how}), '
+        f"restated at {ta.valuation_date}.</p>"
+    )
+
+
 def render(res: Result, title: str = "Assessment ratio study") -> str:
     sc = res.screened
     overall = res.strata.iloc[0]
@@ -166,7 +177,7 @@ def render(res: Result, title: str = "Assessment ratio study") -> str:
 <p class="warn note"><b>{escape(DISCLAIMER)}</b> Synthetic or supplied data only. Ratio studies test how
 uniform and level an assessment roll is; they do not value any one property.</p>{tiles}
 <p class="note">Focus class for neighborhood, price and age strata: <b>{escape(res.focus_class)}</b>.
-Strata with fewer than {res.targets.min_sales} sales are shown but not judged.</p></section>
+Strata with fewer than {res.targets.min_sales} sales are shown but not judged.</p>{_ta_note(res)}</section>
 <section id="strata"><h2>Statistics by stratum</h2>{_strata_html(res)}
 <p class="note">Price-quartile rows omit PRD and PRB: grouping by sale price builds a bias into
 those two measures.</p></section>

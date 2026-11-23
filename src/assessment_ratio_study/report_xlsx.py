@@ -51,6 +51,15 @@ def summary_table(res: Result) -> pd.DataFrame:
     ]
     rows += [(f"  excluded: {k}", int(v)) for k, v in reasons.items()]
     rows += [(f"IQR bounds, {k}", f"{lo:.3f} to {hi:.3f}") for k, (lo, hi) in sc.bounds.items()]
+    ta = res.time_adjustment
+    if ta:
+        rows.append(
+            (
+                "Time adjustment",
+                f"{ta.annual_pct:.2f}% per year ({ta.method}"
+                f"{f' from {ta.n_used} sales' if ta.n_used else ''}), prices restated at {ta.valuation_date}",
+            )
+        )
     fails = res.strata[res.strata["verdict"].isin(["FAIL", "REVIEW"])]
     rows.append(
         (

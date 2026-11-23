@@ -42,7 +42,9 @@ class Truth:
     subtle_non_arms: list[str] = field(default_factory=list)
 
 
-def generate(seed: int = 42) -> tuple[pd.DataFrame, Truth]:
+def generate(seed: int = 42, trend: float = 0.0) -> tuple[pd.DataFrame, Truth]:
+    """`trend` is the yearly market growth: sale prices drift up through the year while the
+    assessment roll (set at 2025-01-01) stays put, as it does in a real assessment year."""
     rng = np.random.default_rng(seed)
     parts: list[pd.DataFrame] = []
     truth = Truth()
@@ -81,7 +83,9 @@ def generate(seed: int = 42) -> tuple[pd.DataFrame, Truth]:
             if cls != "vacant_land"
             else np.full(n, np.nan)
         )
-        dates = pd.to_datetime("2025-01-01") + pd.to_timedelta(rng.integers(0, 365, n), unit="D")
+        days = rng.integers(0, 365, n)
+        dates = pd.to_datetime("2025-01-01") + pd.to_timedelta(days, unit="D")
+        sale_value = price * (1.0 + trend) ** (days / 365.25)
         df = pd.DataFrame(
             {
                 "parcel_id": ids,
@@ -89,7 +93,7 @@ def generate(seed: int = 42) -> tuple[pd.DataFrame, Truth]:
                 "property_class": cls,
                 "year_built": year,
                 "sale_date": np.where(sold, dates.strftime("%Y-%m-%d"), ""),
-                "sale_price": np.where(sold, price.round(-2), np.nan),
+                "sale_price": np.where(sold, sale_value.round(-2), np.nan),
                 "sale_type": np.where(sold, "arms_length", ""),
                 "arms_length": np.where(sold, "Y", ""),
                 "assessed_prior": prior.round(-2),

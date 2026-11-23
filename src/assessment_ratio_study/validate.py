@@ -25,11 +25,32 @@ class Screened:
     bounds: dict[str, tuple[float, float]] = field(default_factory=dict)
 
 
-def load(path: str) -> pd.DataFrame:
-    df = pd.read_csv(path, dtype={"parcel_id": str})
+MONEY_COLUMNS = ["sale_price", "assessed_value", "assessed_prior"]
+
+
+def _to_number(s: pd.Series) -> pd.Series:
+    """Accept "$1,234", "1 234" and blanks, as exported by many CAMA and spreadsheet tools."""
+    if s.dtype.kind in "if":
+        return s
+    cleaned = s.astype(str).str.replace(r"[^0-9.\-]", "", regex=True)
+    return pd.to_numeric(cleaned, errors="coerce")
+
+
+def load(path: str, mapping: dict[str, str] | None = None) -> pd.DataFrame:
+    """Read a sales CSV. `mapping` renames your headers to ours, e.g. {"assessed_value": "TotalAV"}
+    (canonical name -> your header). Money columns may carry $ signs and thousands commas."""
+    df = pd.read_csv(path, dtype=str, keep_default_na=False, na_values=[""])
+    df.columns = [c.strip() for c in df.columns]
+    if mapping:
+        df = df.rename(columns={v.strip(): k for k, v in mapping.items()})
     missing = [c for c in REQUIRED if c not in df.columns]
     if missing:
         raise ValueError(f"missing required columns: {', '.join(missing)}")
+    for c in MONEY_COLUMNS:
+        if c in df.columns:
+            df[c] = _to_number(df[c])
+    if "year_built" in df.columns:
+        df["year_built"] = pd.to_numeric(df["year_built"], errors="coerce")
     return df
 
 

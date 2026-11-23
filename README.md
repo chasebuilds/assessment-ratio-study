@@ -2,9 +2,9 @@
 
 [![ci](https://github.com/chasebuilds/assessment-ratio-study/actions/workflows/ci.yml/badge.svg)](https://github.com/chasebuilds/assessment-ratio-study/actions/workflows/ci.yml) ![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue) [![MIT license](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
-The quality checks county assessors and state revenue departments run on a property tax roll, built from a CSV of sales and assessed values. It screens the sales, then reports how level and how uniform the assessments are, by neighborhood, class, price quartile and age band, and checks whether sold parcels were reassessed more than unsold ones.
+Upload a CSV of sales and assessed values; get back the quality checks county assessors and state revenue departments run on a property tax roll: sale screens, COD, PRD and PRB by neighborhood, class, price quartile and age band, a sales-chasing check, and an Excel and HTML report. Time adjustment for rising markets, your own column headers, and a JSON export are built in.
 
-**Live demo:** <https://chasebuilds.github.io/assessment-ratio-study/> (a seeded synthetic county with four planted problems)
+**Live demo:** <https://chasebuilds.github.io/assessment-ratio-study/> (a seeded synthetic county in a 10% rising market, with four planted problems the report catches)
 
 > **Analysis and education tool. This is not an appraisal.** A USPAP-compliant appraisal requires a licensed or certified appraiser. A ratio study judges a whole roll, never one property.
 
@@ -16,7 +16,9 @@ The quality checks county assessors and state revenue departments run on a prope
 2. **Statistics per stratum:** count, median ratio, weighted mean ratio, mean ratio, COD, PRD, and PRB with a 95% confidence interval. Strata: overall, property class, then inside a focus class (default residential) neighborhood, price quartile and age band.
 3. **Pass or fail against IAAO target ranges** (below). Strata under 30 sales are shown, not judged. A stratum that lost over 10% of its sales to the outlier trim gets REVIEW, because the trim can hide dispersion.
 4. **Charts:** ratio vs sale price, ratio box plots by neighborhood, and a sales-chasing check (median assessed-value change, sold vs unsold parcels, Mann-Whitney test).
-5. **Output:** `report.html` (self-contained), `report.xlsx` (Summary, Strata, Sales chasing, Excluded sales, Targets) and the chart PNGs.
+5. **Time adjustment** (`--time-adjust auto` or a percent per year): restates sale prices at the valuation date, so a rising market against a static roll does not read as bad uniformity. `auto` estimates the trend with a Theil-Sen slope of log(price / assessed) over time.
+6. **Your own file:** `--map assessed_value=TotalAV` renames your headers to ours (repeatable); money columns may carry `$` and commas.
+7. **Output:** `report.html` (self-contained), `report.xlsx` (Summary, Strata, Sales chasing, Excluded sales, Targets), `summary.json` and the chart PNGs.
 
 ## Target ranges
 
@@ -38,6 +40,7 @@ py -m venv .venv
 .venv\Scripts\python -m pip install -e ".[dev]"
 .venv\Scripts\python -m assessment_ratio_study.cli demo --out out        # synthetic county
 .venv\Scripts\python -m assessment_ratio_study.cli run my_sales.csv --out out
+.venv\Scripts\python -m assessment_ratio_study.cli run my_sales.csv --out out --time-adjust auto --map assessed_value=TotalAV
 ```
 
 Input columns (see [`samples/synthetic_county.csv`](samples/synthetic_county.csv)):
@@ -54,7 +57,7 @@ Include the unsold parcels in the file (blank `sale_price`) so the sales-chasing
 
 ## Measured result
 
-The demo county has 3,960 parcels and about 840 sales, with these planted problems: regressivity in Maple Hills, under-assessment in Old Town, high dispersion in Riverbend, sales chasing in Ridgeview, plus mis-keyed prices and half-price non-arm's-length sales nobody flagged. Over 30 seeded counties (full table and limits: [BENCHMARK.md](BENCHMARK.md)):
+From `benchmark/run_benchmark.py` over 30 seeded synthetic counties of about 840 sales each (full tables and limits: [BENCHMARK.md](BENCHMARK.md)). Each county has four planted problems (regressivity in Maple Hills, under-assessment in Old Town, high dispersion in Riverbend, sales chasing in Ridgeview) plus mis-keyed prices and half-price non-arm's-length sales nobody flagged.
 
 | Planted problem | Caught |
 |---|---:|
@@ -68,11 +71,13 @@ The demo county has 3,960 parcels and about 840 sales, with these planted proble
 | Unflagged half-price sales trimmed | 99.0% |
 | False FAIL / REVIEW on clean strata | 0.6% / 2.8% |
 
+In a 12% rising market against a static roll, clean strata raised FAIL or REVIEW 22.2% of the time without time adjustment and 2.8% with `--time-adjust auto`. The estimated trend averaged 12.3% a year against 12.0% planted.
+
 Two findings worth knowing. The high-dispersion neighborhood slips past COD because the outlier trim cuts its wide tails; the trim-rate warning is what catches it, and only 22 of 30 times. And the sales-chasing neighborhood has a near-perfect ratio table (COD about 2), so the ratio statistics pass it every time; only the sold-vs-unsold comparison sees it.
 
 ## Tests and checks
 
-`pytest` (hand-worked COD, PRD and PRB examples in `tests/test_stats.py`, each with its arithmetic in the comments), `ruff`, and `mypy --strict` run in CI on Python 3.11 and 3.13.
+`pytest` (26 tests; hand-worked COD, PRD and PRB examples in `tests/test_stats.py`, each with its arithmetic in the comments), `ruff`, and `mypy --strict` run in CI on Python 3.11 and 3.13.
 
 ```powershell
 .venv\Scripts\python -m pytest
@@ -83,6 +88,6 @@ Two findings worth knowing. The high-dispersion neighborhood slips past COD beca
 
 ## Limits
 
-See [LIMITATIONS.md](LIMITATIONS.md). Short version: synthetic data, the target ranges are one reading of one edition, no time adjustment of sale prices, and the trim can hide dispersion.
+See [LIMITATIONS.md](LIMITATIONS.md). Short version: synthetic data, the target ranges are one reading of one edition, time adjustment assumes one steady yearly trend, and the trim can hide dispersion.
 
 MIT license. Chase Builds.

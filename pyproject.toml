@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "assessment-ratio-study"
-version = "0.1.0"
+version = "0.2.0"
 description = "Assessment ratio study toolkit: sale screens, COD, PRD, PRB, sales-chasing check, Excel and HTML reports."
 readme = "README.md"
 requires-python = ">=3.11"

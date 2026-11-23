@@ -11,5 +11,6 @@
 - **PRB** uses the value-proxy regression described in the docstring in `stats.py`. It is only counted as a problem when the slope is statistically significant and outside +/-0.05.
 - **Strata under 30 sales** are shown but not judged. Many tests across many strata will throw a few false alarms by chance (0.6% FAIL and 2.8% REVIEW on clean strata in the benchmark).
 - **Sales-chasing check** needs a prior-year assessed value on every parcel, sold or not. It compares median percent change, sold versus unsold, inside each neighborhood. It cannot tell chasing from a legitimate reappraisal that happened to hit sold parcels.
-- **Time adjustment** of sale prices is not done. A study over a long period in a moving market should adjust first.
+- **Time adjustment** assumes one steady yearly trend for the whole county and a roll that did not change during the sale period. It is off unless you ask. `auto` needs at least 30 dated arm's-length sales and will read a mid-year reassessment as market movement. Markets that differ by neighborhood need a trend per area, which this does not do.
+- **Column mapping and money parsing** cover renamed headers and `$1,234` style values. Other formats (accounting negatives, dates in odd layouts) are not handled.
 - **One focus class** drives the neighborhood, price and age strata (default `residential`, change with `--focus-class`).
