@@ -30,6 +30,8 @@ jobs:
       - run: |
           mv site/report.html site/index.html
           rm site/truth.json
+      - name: Page title, description and share preview
+        run: python3 demo/page_meta.py site
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
