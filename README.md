@@ -91,3 +91,11 @@ Two findings worth knowing. The high-dispersion neighborhood slips past COD beca
 See [LIMITATIONS.md](LIMITATIONS.md). Short version: synthetic data, the target ranges are one reading of one edition, time adjustment assumes one steady yearly trend, and the trim can hide dispersion.
 
 MIT license. Chase Builds.
+
+## More from Chase Builds
+
+- **[cost-approach-calculator](https://github.com/chasebuilds/cost-approach-calculator)**: Replacement cost, depreciation and land value, with every step shown. ([live demo](https://chasebuilds.github.io/cost-approach-calculator/))
+- **[housing-market-trends](https://github.com/chasebuilds/housing-market-trends)**: Monthly market metrics and a time-adjustment rate with a confidence band. ([live demo](https://chasebuilds.github.io/housing-market-trends/))
+- **[income-approach-valuation](https://github.com/chasebuilds/income-approach-valuation)**: Income approach for rentals and small commercial: rent roll to NOI, direct cap, band of investment and DCF, reconciled. ([live demo](https://chasebuilds.github.io/income-approach-valuation/))
+
+[All projects, sorted by industry](https://github.com/chasebuilds) · [chasebuilds.github.io](https://chasebuilds.github.io)
